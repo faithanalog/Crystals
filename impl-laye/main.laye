@@ -1,0 +1,70 @@
+enum OpCode
+{
+   RIGHT,
+   LEFT,
+   INC,
+   DEC,
+   PRINT,
+   READ,
+   LSTART,
+   LEND
+}
+
+type CrystalsState
+{
+   var mem, ptr = 0
+
+   ctor(@memLen)
+   {
+      @mem = new List:len(@memLen)
+      @mem fill 0
+   }
+
+   interpret(program)
+   {
+      var pc = 0
+      while (pc < #program)
+      {
+         program[pc] match
+         {
+            OpCode.RIGHT: if (ptr == @memLen - 1) ptr = 0 el ptr+ = 1
+            OpCode.LEFT: if (ptr == 0) ptr = @memLen - 1 el ptr- = 1
+            OpCode.INC: mem[ptr]+ = 1
+            OpCode.DEC: mem[ptr]- = 1
+            OpCode.PRINT: println(mem[ptr])
+            OpCode.READ: readbyte(ref mem[ptr])
+            OpCode.LSTART: if (mem[ptr] == 0) skipEnd(ref pc)
+            OpCode.LEND: skipStart(ref pc)
+         }
+         pc+ = 1
+      }
+   }
+
+   skipEnd(pc)
+   {
+      var count = 0
+      while not (program[pc] == OpCode.LEND and count == 0)
+      {
+         program[pc] match
+         {
+            OpCode.LSTART: count+ = 1
+            OpCode.LEND: count- = 1
+         }
+         pc+ = 1
+      }
+   }
+
+   skipStart(pc)
+   {
+      var count = 0
+      while not (program[pc] == OpCode.LSTART and count == 0)
+      {
+         program[pc] match
+         {
+            OpCode.LSTART: count- = 1
+            OpCode.LEND: count+ = 1
+         }
+         pc- = 1
+      }
+   }
+}
